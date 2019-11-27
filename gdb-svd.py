@@ -335,16 +335,16 @@ class GdbSvdInfoCmd(GdbSvdCmd):
                 
                 try:
                         periph_name = args[0].upper()
-                        periphs = filter(lambda x: x.name.startswith(periph_name), self.device.peripherals)
+                        periphs = list(filter(lambda x: x.name.startswith(periph_name), self.device.peripherals))
                         regs = fields = None
                         
                         if len(args) >= 2 and len(periphs) == 1:
                             reg_name =  args[1].upper()
-                            regs = filter(lambda x: x.name.startswith(reg_name), periphs[0].registers)
+                            regs = list(filter(lambda x: x.name.startswith(reg_name), periphs[0].registers))
 
                         if len(args) >= 3 and len(regs) == 1:
                             field_name = args[2].upper()
-                            fields = filter(lambda x: x.name.startswith(field_name), regs[0].fields)
+                            fields = list(filter(lambda x: x.name.startswith(field_name), regs[0].fields))
 
                         GdbSvdCmd.print_desc(self, periphs, regs, fields)
 
