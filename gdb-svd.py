@@ -61,13 +61,13 @@ if __name__ == "__main__":
         GdbSvd()
 
 class GdbSvdCmd(gdb.Command):
-	def __init__(self, device, peripherals):
+        def __init__(self, device, peripherals):
                 self.device = device
                 self.peripherals = peripherals
                 self.column_with = 100
 
-	def complete(self, text, word):
-            	args = str(text).split(" ")
+        def complete(self, text, word):
+                args = str(text).split(" ")
                 nb_args = len(args)
 
                 if nb_args == 1:
@@ -198,8 +198,8 @@ class GdbSvdCmd(gdb.Command):
                 self.write(register, val)
 
         def read(self, register):
-		""" Read register and return an integer
-		"""
+                """ Read register and return an integer
+                """
                 #access could be not defined for a register
                 if register.access in [None, "read-only", "read-write", "read-writeOnce"]:
                         addr = register.parent.base_address + register.address_offset
@@ -208,9 +208,9 @@ class GdbSvdCmd(gdb.Command):
                 else:
                         return None
 
-	def write(self, register, val):
-		""" Write data to memory
-		"""
+        def write(self, register, val):
+                """ Write data to memory
+                """
                 if register.access in [None, "write-only", "read-write", "writeOnce", "read-writeOnce"]:
                         addr = register.parent.base_address + register.address_offset
                         cmd = "monitor mww phys {:#x} {:#x}".format(addr, val)
