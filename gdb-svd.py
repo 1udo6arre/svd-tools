@@ -92,12 +92,12 @@ class GdbSvdCmd(gdb.Command):
 
                 return gdb.COMPLETE_NONE
 
-        def get_registers_val(self, registers):
+        def get_registers_val(self, peripheral, registers):
                 registers_val = []
 
                 for reg in registers:
-                        addr = reg.parent.base_address + reg.address_offset
-                        val = self.read(reg)
+                        addr = peripheral.base_address + reg.address_offset
+                        val = self.read(peripheral, reg)
                         if val is None:
                             fval = val
                             val = reg.access
@@ -152,12 +152,12 @@ class GdbSvdCmd(gdb.Command):
                 desc_table = AsciiTable(table_show, title = desc_title)
                 gdb.write("{}\n".format(desc_table.table))
 
-        def print_registers(self, registers):
+        def print_registers(self, peripheral, registers):
                 regs_table = []
                 reg_val = []
                 regs_table.append(["name", "address", "value", "fields"])
 
-                reg_val += self.get_registers_val(registers)
+                reg_val += self.get_registers_val(peripheral, registers)
                 
                 for r in reg_val:
                     f_str = []
@@ -177,7 +177,7 @@ class GdbSvdCmd(gdb.Command):
                 gdb.write("{}\n".format(rval_table.table))
 
 
-        def set_register(self, register, value, field = None):
+        def set_register(self, peripheral, register, value, field = None):
                 val = value
                 if field is not None:
                         max_val = ((1 << field.bit_width) - 1)
@@ -187,7 +187,7 @@ class GdbSvdCmd(gdb.Command):
                         mask = max_val << field.bit_offset
 
                         #read register value with gdb
-                        val = self.read(register)
+                        val = self.read(peripheral, register)
                         if val is None:
                                 raise Exception("Register not readable")
 
@@ -195,24 +195,24 @@ class GdbSvdCmd(gdb.Command):
                         val |= value << field.bit_offset
 
                 # write val to target
-                self.write(register, val)
+                self.write(peripheral, register, val)
 
-        def read(self, register):
+        def read(self, peripheral, register):
                 """ Read register and return an integer
                 """
                 #access could be not defined for a register
                 if register.access in [None, "read-only", "read-write", "read-writeOnce"]:
-                        addr = register.parent.base_address + register.address_offset
+                        addr = peripheral.base_address + register.address_offset
                         cmd = "monitor mdw phys {:#x}".format(addr)
                         return int(gdb.execute(cmd, False, True).split(': ')[1], 16)
                 else:
                         return None
 
-        def write(self, register, val):
+        def write(self, peripheral, register, val):
                 """ Write data to memory
                 """
                 if register.access in [None, "write-only", "read-write", "writeOnce", "read-writeOnce"]:
-                        addr = register.parent.base_address + register.address_offset
+                        addr = peripheral.base_address + register.address_offset
                         cmd = "monitor mww phys {:#x} {:#x}".format(addr, val)
                         gdb.execute(cmd, False, True)
                 else:
@@ -255,7 +255,7 @@ class GdbSvdGetCmd(GdbSvdCmd):
                                 reg_name = args[1].upper()
                                 regs = [[r for r in regs if r.name == reg_name][0]]
 
-                        GdbSvdCmd.print_registers(self, regs)
+                        GdbSvdCmd.print_registers(self, periph, regs)
 
                 except Exception as inst:
                         gdb.write("{}\n".format(inst))
@@ -303,7 +303,7 @@ class GdbSvdSetCmd(GdbSvdCmd):
                         else:
                                 value = int(args[2], 16)
                         
-                        GdbSvdCmd.set_register(self, reg, value, field)
+                        GdbSvdCmd.set_register(self, periph, reg, value, field)
 
                 except Exception as inst:
                         gdb.write("{}\n".format(inst))
