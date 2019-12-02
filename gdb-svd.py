@@ -337,14 +337,16 @@ class GdbSvdInfoCmd(GdbSvdCmd):
                         periph_name = args[0].upper()
                         periphs = list(filter(lambda x: x.name.startswith(periph_name), self.device.peripherals))
                         regs = fields = None
-                        
-                        if len(args) >= 2 and len(periphs) == 1:
-                            reg_name =  args[1].upper()
-                            regs = list(filter(lambda x: x.name.startswith(reg_name), periphs[0].registers))
 
-                        if len(args) >= 3 and len(regs) == 1:
+                        if len(args) >= 2:
+                            per = [ per for per in periphs if per.name == periph_name ][0]
+                            reg_name =  args[1].upper()
+                            regs = list(filter(lambda x: x.name.startswith(reg_name), per.registers))
+
+                        if len(args) >= 3:
+                            reg = [ reg for reg in regs if reg.name == reg_name ][0]
                             field_name = args[2].upper()
-                            fields = list(filter(lambda x: x.name.startswith(field_name), regs[0].fields))
+                            fields = list(filter(lambda x: x.name.startswith(field_name), reg.fields))
 
                         GdbSvdCmd.print_desc(self, periphs, regs, fields)
 
