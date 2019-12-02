@@ -237,7 +237,7 @@ class GdbSvdGetCmd(GdbSvdCmd):
                 args = str(arg).split(" ")
                 if len(args) > 2:
                         gdb.write("Invalide parameter\n")
-                        gdb.execute("help svd set")
+                        gdb.execute("help svd get")
                         return
 
                 try:
