@@ -46,14 +46,19 @@ The CMSIS SVD (System View Description) inspector commands
 
         svd [filename] load an SVD file and to create the command for inspecting
         that object
+
 List of svd subcommands:
+svd dump -- Get register(s) value(s): svd dump <filename> [peripheral]
 svd get -- Get register(s) value(s): svd get [peripheral] [register]
 svd info -- Info on Peripheral|register|field: svd info <peripheral> [register] [field]
 svd set -- Set register value: svd set <peripheral> <register> [field] <value>
 ```
-- Info: get information on peripherals, registers, fields. The last parameter
-can be or not a fullname, a filter is applied with your string.
- * get information on all ADC
+#### Info on peripheral register field
+
+> **Note**:
+> The last parameter can be or not a fullname, a filter is applied with your string.
+
+ - Information on all ADC
 ```
 (gdb) svd info ADC
 +Peripherals--------+--------+-----------------------------+
@@ -64,7 +69,7 @@ can be or not a fullname, a filter is applied with your string.
 | ADC3 | 0x40012200 | None   | Analog-to-digital converter |
 +------+------------+--------+-----------------------------+
 ```
- * get information on all ADC1 registers beginning by S
+ - Information on all ADC1 registers beginning by S
 ```
 (gdb) svd info ADC1 S
 +Registers-----------+------------+-----------------------------+
@@ -78,7 +83,7 @@ can be or not a fullname, a filter is applied with your string.
 | SQR3  | 0x40012034 | read-write | regular sequence register 3 |
 +-------+------------+------------+-----------------------------+
 ```
- * get information on all fields (peripheral: ADC1 register: CR1) beginning by J
+ - Information on all fields (peripheral: ADC1 register: CR1) beginning by J
 ```
 (gdb) svd info ADC1 CR1 J
 +Fields---+-----------+--------+---------------------------------------------+
@@ -90,8 +95,8 @@ can be or not a fullname, a filter is applied with your string.
 | JEOCIE  | [7:7]     | None   | Interrupt enable for injected channels      |
 +---------+-----------+--------+---------------------------------------------+
 ```
-- Get registers and fields values
- * all registers of WWDG
+#### Get value
+ - Get all registers of WWDG
 ```
 (gdb) svd get WWDG
 +Registers----------+------------+----------------------------------------------------------+
@@ -102,7 +107,7 @@ can be or not a fullname, a filter is applied with your string.
 | SR   | 0x40002c08 | 0x00000000 | EWIF[0:0]=0x0                                            |
 +------+------------+------------+----------------------------------------------------------+
 ```
- * fields of RCC AHB3ENR
+ - Get fields of RCC AHB3ENR
  ```
 (gdb) svd get RCC AHB3ENR
 +Registers+------------+------------+--------------------------------+
@@ -111,19 +116,22 @@ can be or not a fullname, a filter is applied with your string.
 | AHB3ENR | 0x40023838 | 0x00000000 | FMCEN[0:0]=0x0 QSPIEN[1:1]=0x1 |
 +---------+------------+------------+--------------------------------+
 ```
+#### Set value
 - Set register value
 ```
 (gdb) svd set RCC AHB3ENR 0x0
 ```
+- Set field of
 ```
 (gdb) svd set RCC AHB3ENR QSPIEN 0x1
 ```
- * Dump value of all registers to file
+#### Dump value in file
+ - Dump value of all registers to file
 ```
 (gdb) svd dump <filename>
 Print to file: <filename>
 ```
- * Dump value of ADC1 to file
+ - Dump value of ADC1 to file
 ```
 (gdb) svd dump <filename> ADC1
 Print to file: <filename>
