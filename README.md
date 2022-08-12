@@ -15,6 +15,7 @@ It's a python module for gdb. This adds some gdb commands to:
 - get information on peripherals | registers | fields
 - get registers values | register fields
 - set registers values | register fields
+- dump registers values to file
 
 Can be used on microcontroller or microprocesseur with mmu (thanks to openocd with `mdw phys` option).
 
@@ -116,6 +117,16 @@ can be or not a fullname, a filter is applied with your string.
 ```
 ```
 (gdb) svd set RCC AHB3ENR QSPIEN 0x1
+```
+ * Dump value of all registers to file
+```
+(gdb) svd dump <filename>
+Print to file: <filename>
+```
+ * Dump value of ADC1 to file
+```
+(gdb) svd dump <filename> ADC1
+Print to file: <filename>
 ```
 ## Authors
 Ludovic Barre 1udovic.6arre@gmail.com
