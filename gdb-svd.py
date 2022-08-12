@@ -96,15 +96,22 @@ class GdbSvdCmd(gdb.Command):
         def get_registers_val(self, peripheral, registers):
                 registers_val = []
 
+                nb = len(registers)
+
                 for reg in registers:
                         addr = peripheral.base_address + reg.address_offset
-                        val = self.read(peripheral, reg)
-                        if val is None:
-                            fval = val
-                            val = reg.access
-                        else:
-                            fval = self.get_fields_val(reg.fields, val)
-                            val = "0x{:08x}".format(val)
+
+                        try:
+                            val = self.read(peripheral, reg)
+                            if val is None:
+                                fval = val
+                                val = reg.access
+                            else:
+                                fval = self.get_fields_val(reg.fields, val)
+                                val = "0x{:08x}".format(val)
+                        except:
+                            val = "DataAbort"
+                            fval = ""
 
                         addr = "0x{:08x}".format(addr)
                         registers_val += [{"name": reg.name,
@@ -159,7 +166,7 @@ class GdbSvdCmd(gdb.Command):
                 regs_table.append(["name", "address", "value", "fields"])
 
                 reg_val += self.get_registers_val(peripheral, registers)
-                
+
                 for r in reg_val:
                     f_str = []
                     fields = r["fields"]
@@ -212,7 +219,12 @@ class GdbSvdCmd(gdb.Command):
                 if register.access in [None, "read-only", "read-write", "read-writeOnce"]:
                         addr = peripheral.base_address + register.address_offset
                         cmd = "monitor mdw phys {:#x}".format(addr)
-                        return int(gdb.execute(cmd, False, True).split(': ')[1], 16)
+                        try:
+                            val = int(gdb.execute(cmd, False, True).split(': ')[1], 16)
+                        except Exception as err:
+                            #if openocd can't access to addr => data abort
+                            return err
+                        return val
                 else:
                         return None
 
