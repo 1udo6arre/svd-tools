@@ -370,10 +370,18 @@ class GdbSvdDumpCmd(GdbSvdCmd):
 
         def complete(self, text, word):
                 args = str(text).split(" ")
-                if len(args) > 2:
+                nb_args = len(args)
+
+                if nb_args == 1:
+                        return gdb.COMPLETE_FILENAME
+
+                if nb_args > 2:
                         return gdb.COMPLETE_NONE
 
-                return GdbSvdCmd.complete(self, text, word)
+                # remove first argument <filename>
+                args.pop(0)
+
+                return GdbSvdCmd.complete(self, " ".join(args), word)
 
         def invoke(self, arg, from_tty):
                 args = str(arg).split(" ")
