@@ -37,7 +37,7 @@ class GdbSvd(gdb.Command):
 
         def invoke(self, arg, from_tty):
                 try:
-                        argv = gdb.string_to_argv(arg)                
+                        argv = gdb.string_to_argv(arg)
                         if len(argv) != 1:
                                 raise Exception("Invalid parameter")
 
@@ -99,7 +99,7 @@ class GdbSvdCmd(gdb.Command):
                 if nb_args == 1:
                         filt = filter(lambda x: x.upper().startswith(args[0].upper()), self.peripherals)
                         return filt
-                
+
                 periph_name = args[0].upper()
                 periph = self.peripherals[periph_name]
                 reg_names = [reg.name for reg in periph.registers]
@@ -156,12 +156,12 @@ class GdbSvdCmd(gdb.Command):
                         fname = "{}[{}:{}]".format(f.name, msb, lsb)
                         fieldval = (reg_values >> lsb) & ((1 << f.bit_width) - 1)
                         fields_val += [{"name": fname, "value": fieldval}]
-            
+
                 return fields_val
 
         def print_desc(self, peripherals, registers = None, fields = None):
                 table_show = []
-              
+
                 if fields is not None:
                     desc_title = "Fields"
                     table_show.append(["name", "[msb:lsb]", "access", "description"])
@@ -202,11 +202,11 @@ class GdbSvdCmd(gdb.Command):
                                 f_str.append("\033[94m{name}={value:#x}\033[0m".format(**f))
                             else:
                                 f_str.append("{name}={value:#x}".format(**f))
-                    
-                    f_str = '\n'.join(wrap(" ".join(f_str), self.column_with))                  
+
+                    f_str = '\n'.join(wrap(" ".join(f_str), self.column_with))
                     regs_table.append([r["name"], r["addr"], r["value"], f_str])
                 rval_table = AsciiTable(regs_table, title=peripheral.name)
-                
+
                 if output_file_name == "None":
                     gdb.write("{}\n".format(rval_table.table))
                 else:
@@ -216,7 +216,6 @@ class GdbSvdCmd(gdb.Command):
                         file_object.close()
                     except:
                         gdb.write("Error writting to file \n")
-
 
         def set_register(self, peripheral, register, value, field = None):
                 val = value
@@ -297,8 +296,8 @@ class GdbSvdGetCmd(GdbSvdCmd):
                         gdb.write("Invalid peripheral name\n")
                         GdbSvdCmd.print_desc(self, self.device.peripherals, None, None)
                         return
-                
-                try:            
+
+                try:
                         regs = periph.registers
 
                         if len(args) == 2:
@@ -325,10 +324,10 @@ class GdbSvdSetCmd(GdbSvdCmd):
                         return gdb.COMPLETE_NONE
 
                 return GdbSvdCmd.complete(self, text, word)
-        
+
         def invoke(self, arg, from_tty):
                 args = str(arg).split(" ")
-    
+
                 try:
                         periph_name = args[0].upper()
                         periph = self.peripherals[periph_name]
@@ -336,7 +335,7 @@ class GdbSvdSetCmd(GdbSvdCmd):
                         gdb.write("Invalid peripheral name\n")
                         GdbSvdCmd.print_desc(self, self.device.peripherals, None, None)
                         return
-                
+
                 if len(args) < 3 or len(args) > 4:
                         gdb.write("Invalid parameter\n")
                         gdb.execute("help svd set")
@@ -352,12 +351,12 @@ class GdbSvdSetCmd(GdbSvdCmd):
                                 value = int(args[3], 16)
                         else:
                                 value = int(args[2], 16)
-                        
+
                         GdbSvdCmd.set_register(self, periph, reg, value, field)
 
                 except Exception as inst:
                         gdb.write("{}\n".format(inst))
-                
+
                 except:
                         gdb.write("Error cannot set the value\n")
 
@@ -367,7 +366,7 @@ class GdbSvdInfoCmd(GdbSvdCmd):
         def __init__(self, device, peripherals):
                 GdbSvdCmd.__init__(self, device, peripherals)
                 gdb.Command.__init__(self, "svd info", gdb.COMMAND_DATA)
-        
+
         def complete(self, text, word):
                 args = str(text).split(" ")
                 if len(args) > 3:
@@ -382,7 +381,7 @@ class GdbSvdInfoCmd(GdbSvdCmd):
                         gdb.write("Invalid parameter\n")
                         gdb.execute("help svd info")
                         return
-                
+
                 try:
                         periph_name = args[0].upper()
                         periphs = list(filter(lambda x: x.name.startswith(periph_name), self.device.peripherals))
