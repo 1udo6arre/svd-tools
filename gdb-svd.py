@@ -39,7 +39,7 @@ class GdbSvd(gdb.Command):
                 try:
                         argv = gdb.string_to_argv(arg)                
                         if len(argv) != 1:
-                                raise Exception("Invalide parameter")
+                                raise Exception("Invalid parameter")
 
                         pathfile = argv[0]
                         gdb.write("Svd Loading {} ".format(pathfile))
@@ -286,7 +286,7 @@ class GdbSvdGetCmd(GdbSvdCmd):
         def invoke(self, arg, from_tty):
                 args = str(arg).split(" ")
                 if len(args) > 2:
-                        gdb.write("Invalide parameter\n")
+                        gdb.write("Invalid parameter\n")
                         gdb.execute("help svd get")
                         return
 
@@ -338,7 +338,7 @@ class GdbSvdSetCmd(GdbSvdCmd):
                         return
                 
                 if len(args) < 3 or len(args) > 4:
-                        gdb.write("Invalide parameter\n")
+                        gdb.write("Invalid parameter\n")
                         gdb.execute("help svd set")
                         return
 
@@ -379,7 +379,7 @@ class GdbSvdInfoCmd(GdbSvdCmd):
                 args = str(arg).split(" ")
 
                 if len(args) < 1 or len(args) > 3:
-                        gdb.write("Invalide parameter\n")
+                        gdb.write("Invalid parameter\n")
                         gdb.execute("help svd info")
                         return
                 
