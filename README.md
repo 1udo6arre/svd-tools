@@ -17,13 +17,15 @@ It's a python module for gdb. This adds some gdb commands to:
 - set registers values | register fields
 - dump registers values to file
 
-Can be used on microcontroller or microprocesseur with mmu (thanks to openocd with `mdw phys` option).
-
 ### Dependencies
-- [openocd](http://openocd.org/)
+- [openocd](http://openocd.org/) or other
 - [gdb](https://www.gnu.org/software/gdb/)
 - [cmsis-svd](https://pypi.org/project/cmsis-svd/) python: cmsis-svd parser
 - [terminaltables](https://pypi.org/project/terminaltables/) python: terminaltables
+
+> On microprocessor: I advise to use openocd, in order to access at physical memory
+> without need to enable/disable MMU (thanks to openocd with `mdw phys`
+> option).
 
 ### How to use
 These commands support tab completion to look-up file, peripherals, registers or fields
