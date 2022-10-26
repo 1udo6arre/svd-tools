@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with svd-tools.  If not, see <https://www.gnu.org/licenses/>.
 
+import re
 import gdb
 from terminaltables import AsciiTable
 from cmsis_svd.parser import SVDParser
@@ -44,11 +45,8 @@ class GdbSvd(gdb.Command):
                         gdb.write("Svd Loading {} ".format(pathfile))
                         parser = SVDParser.for_xml_file(pathfile)
                         device = parser.get_device()
+
                         peripherals = dict((peripheral.name,peripheral) for peripheral in device.peripherals)
-                        GdbSvdGetCmd(device, peripherals)
-                        GdbSvdSetCmd(device, peripherals)
-                        GdbSvdInfoCmd(device, peripherals)
-                        GdbSvdDumpCmd(device, peripherals)
 
                 except Exception as inst:
                         gdb.write("\n{}\n".format(inst))
@@ -58,6 +56,11 @@ class GdbSvd(gdb.Command):
                 else:
                         gdb.write("Done\n")
 
+                        GdbSvdGetCmd(device, peripherals)
+                        GdbSvdSetCmd(device, peripherals)
+                        GdbSvdInfoCmd(device, peripherals)
+                        GdbSvdDumpCmd(device, peripherals)
+
 if __name__ == "__main__":
         GdbSvd()
 
@@ -66,6 +69,28 @@ class GdbSvdCmd(gdb.Command):
                 self.device = device
                 self.peripherals = peripherals
                 self.column_with = 100
+                version = gdbserver = []
+
+                try:
+                    version = gdb.execute("monitor version", False, True)
+                except:
+                    pass
+
+                try:
+                    gdbserver = gdb.execute("monitor gdbserver status", False, True)
+                except:
+                    pass
+
+                if "Open On-Chip Debugger" in version:
+                    self.read_cmd = "monitor mdw phys {address:#x}"
+                    self.write_cmd = "monitor mww phys {address:#x} {value:#x}"
+
+                elif "gdbserver for" in gdbserver:
+                    self.read_cmd = "monitor rw {address:#x}"
+                    self.write_cmd = "monitor ww {address:#x} {value:#x}"
+                else:
+                    self.read_cmd = "x /x {address:#x}"
+                    self.write_cmd = "set *(int *){address:#x}={value:#x}"
 
         def complete(self, text, word):
                 args = str(text).split(" ")
@@ -103,6 +128,7 @@ class GdbSvdCmd(gdb.Command):
 
                         try:
                             val = self.read(peripheral, reg)
+
                             if val is None:
                                 fval = val
                                 val = reg.access
@@ -218,9 +244,12 @@ class GdbSvdCmd(gdb.Command):
                 #access could be not defined for a register
                 if register.access in [None, "read-only", "read-write", "read-writeOnce"]:
                         addr = peripheral.base_address + register.address_offset
-                        cmd = "monitor mdw phys {:#x}".format(addr)
+                        cmd = self.read_cmd.format(address=addr)
+                        pattern = re.compile('(?P<ADDR>\w+):( *?(?P<VALUE>[a-f0-9]+))')
+
                         try:
-                            val = int(gdb.execute(cmd, False, True).split(': ')[1], 16)
+                            match = re.search(pattern, gdb.execute(cmd, False, True))
+                            val = int(match.group('VALUE'), 16)
                         except Exception as err:
                             #if openocd can't access to addr => data abort
                             return err
@@ -233,7 +262,8 @@ class GdbSvdCmd(gdb.Command):
                 """
                 if register.access in [None, "write-only", "read-write", "writeOnce", "read-writeOnce"]:
                         addr = peripheral.base_address + register.address_offset
-                        cmd = "monitor mww phys {:#x} {:#x}".format(addr, val)
+                        cmd = self.write_cmd.format(address=addr, value=val)
+
                         gdb.execute(cmd, False, True)
                 else:
                         raise Exception("Register not writable")
